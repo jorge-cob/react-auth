@@ -2,6 +2,7 @@ import { combineReducers } from 'redux';
 import { persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 
+import FeedbackReducer from './feedback/feedback.reducer';
 import userReducer from './user/user.reducer';
 
 const persistConfig = {
@@ -12,6 +13,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   user: userReducer,
+  feedback: FeedbackReducer,
 });
 
 export default persistReducer(persistConfig, rootReducer);
