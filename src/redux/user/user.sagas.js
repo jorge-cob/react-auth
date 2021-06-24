@@ -6,9 +6,11 @@ import {
   auth, 
   googleProvider, 
   createUserProfileDocument,
-  getCurrentUser
+  getCurrentUser,
+  updateUserDocument
 } from '../../firebase/firebase.utils';
-import { signInFailure, signInSuccess, signOutFailure, signOutSuccess, signUpFailure, signUpSuccess } from './user.actions';
+import { signInFailure, signInSuccess, signOutFailure, signOutSuccess, signUpFailure, signUpSuccess, updateUserFailure, updateUserSuccess } from './user.actions';
+import { setFeedback } from '../feedback/feedback.actions';
 
 export function* getSnapshotFromUserAuth(userAuth, additionalData) {
   try {
@@ -75,6 +77,26 @@ export function* signUp({payload: { email, password, displayName }}) {
   }
 };
 
+export function* updateUser(userData) {
+  try {
+    const userAuth = yield getCurrentUser();
+    const userRef = yield call(updateUserDocument, userAuth, userData);
+    const userSnapshot = yield userRef.get();
+    yield console.log('userSnapshot', userSnapshot.data());
+    yield put(
+      updateUserSuccess({ id: userSnapshot.id, ...userSnapshot.data() })
+    );
+    yield put(
+      setFeedback({ success: true, message: 'Your changes have been successfully saved.', timeout: 4000})
+    );
+  } catch(err) {
+    yield put(updateUserFailure(err));
+    yield put(
+      setFeedback({ success: false, message: 'Something went wrong updating your information', timeout: 4000})
+    );
+  }
+};
+
 export function* signInAfterSignUp({ payload: { user, additionalData } }) {
   yield getSnapshotFromUserAuth(user, additionalData);
 };
@@ -103,6 +125,11 @@ export function* onSignUpStart() {
   yield takeLatest(UserActionTypes.SIGN_UP_START, signUp)
 };
 
+export function* onUpdateUserStart() {
+  yield takeLatest(UserActionTypes.USER_UPDATE_START, updateUser)
+};
+
+
 export function* userSagas() {
   yield all([
     call(onGoogleSignInStart), 
@@ -110,6 +137,7 @@ export function* userSagas() {
     call(onCheckUserSession),
     call(onSignOutStart),
     call(onSignUpStart),
-    call(onSignupSuccess)
+    call(onSignupSuccess),
+    call(onUpdateUserStart),
   ]);
 };

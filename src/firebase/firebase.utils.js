@@ -22,7 +22,6 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
     const { displayName, email } = userAuth;
     const userName = displayName ? displayName : additionalData.displayName;
     const createdAt = new Date();
-
     try {
       await userRef.set({
         displayName: userName,
@@ -33,10 +32,26 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
       console.log('error creating user', err.message);
     }
   }
-
   return userRef;
 };
 
+export const updateUserDocument = async (userAuth, userData) => {
+  const { id, name, displayName } = userData.payload;
+  if (!userAuth || userAuth.uid !== id) return;
+  const userRef = firestore.doc(`users/${userAuth.uid}`);
+  const snapShot = await userRef.get();
+  if(snapShot.exists) {
+    try {
+      await userRef.update({
+        displayName,
+        name
+      })
+    } catch (err) {
+      console.log('error updating user', err.message);
+    }
+  }
+  return userRef;
+};
 
 
 if (!firebase.apps.length) {
