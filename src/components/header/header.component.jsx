@@ -19,7 +19,7 @@ const Header = () => {
     feedback: state => state.feedback
   }));
   useEffect(() => {
-    setShowFeedback(true);
+    setShowFeedback(feedback.message ? true : false);
     if(feedback.timeout && feedback.timeout !== 0) {
       setTimeout(() => {
         setShowFeedback(false)
